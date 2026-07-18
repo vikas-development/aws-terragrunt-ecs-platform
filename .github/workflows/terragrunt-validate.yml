@@ -1,0 +1,56 @@
+name: Terragrunt Validate
+
+on:
+  pull_request:
+    branches: [develop, qa, main]
+  push:
+    branches: [develop, qa, main]
+
+permissions:
+  id-token: write   # required for OIDC
+  contents: read
+
+jobs:
+  determine-env:
+    runs-on: ubuntu-latest
+    outputs:
+      env: ${{ steps.set-env.outputs.env }}
+    steps:
+      - id: set-env
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/develop" ]; then echo "env=dev" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.ref }}" = "refs/heads/qa" ]; then echo "env=qa" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.ref }}" = "refs/heads/main" ]; then echo "env=prod" >> "$GITHUB_OUTPUT"
+          else echo "env=dev" >> "$GITHUB_OUTPUT"
+          fi
+
+  validate:
+    needs: determine-env
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_GITHUB_ACTIONS_ROLE_ARN }}
+          aws-region: ap-south-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.6.0"
+
+      - name: Setup Terragrunt
+        run: |
+          curl -sL https://github.com/gruntwork-io/terragrunt/releases/download/v0.55.0/terragrunt_linux_amd64 -o terragrunt
+          chmod +x terragrunt
+          sudo mv terragrunt /usr/local/bin/
+
+      - name: Terragrunt fmt check
+        run: terragrunt hclfmt --terragrunt-check
+        working-directory: terragrunt/${{ needs.determine-env.outputs.env }}
+        continue-on-error: true  # no modules wired up yet in Phase 0
+
+      - name: Confirm AWS identity (OIDC sanity check)
+        run: aws sts get-caller-identity

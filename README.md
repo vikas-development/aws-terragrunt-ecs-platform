@@ -39,11 +39,15 @@ A cloud-native DevOps automation platform that provisions and manages complete a
 ## Project Phases
 
 ### Phase 0 — Repository & Foundation Setup
-- [ ] Initialize Git repository and branch strategy (`main`, `develop`, feature branches)
-- [ ] Define folder structure: `terraform-modules/`, `terragrunt/`, `app/`, `docker/`, `.github/workflows/`
-- [ ] Set up remote Terraform state backend (S3 + DynamoDB lock table)
-- [ ] Configure AWS credentials via GitHub Actions OIDC (no long-lived access keys)
-- [ ] Write root `terragrunt.hcl` with common inputs (region, tags, backend config)
+- [x] Initialize Git repository
+- [x] Define folder structure: `terraform-modules/`, `terragrunt/`, `app/`, `docker/`, `.github/workflows/`, `bootstrap/`, `tests/`
+- [x] Branch strategy: `develop` → Dev, `qa` → QA, `main` → Prod (Prod applies gated by manual approval)
+- [x] Remote Terraform state backend (S3 + DynamoDB lock table) — `bootstrap/main.tf`, run once manually
+- [x] GitHub Actions OIDC role for AWS auth (no long-lived access keys) — `bootstrap/github-oidc.tf`
+- [x] Root `terragrunt/root.hcl` with shared backend + provider config
+- [x] Per-environment `env.hcl` files (`terragrunt/dev`, `terragrunt/qa`, `terragrunt/prod`)
+- [x] Cost-safety teardown script — `scripts/destroy-env.sh`
+- [x] CI validation workflow scaffold — `.github/workflows/terragrunt-validate.yml`
 
 ### Phase 1 — Networking Module
 - [ ] VPC with public/private subnets across 2 AZs
@@ -124,10 +128,25 @@ A cloud-native DevOps automation platform that provisions and manages complete a
 
 ---
 
+## Branch Strategy → Environment Mapping
+
+| Branch | Environment | Terragrunt folder | Apply behavior |
+|---|---|---|---|
+| `develop` | Dev | `terragrunt/dev/` | Auto-apply on merge |
+| `qa` | QA | `terragrunt/qa/` | Auto-apply on merge, then Phase 10 QA gate runs |
+| `main` | Prod | `terragrunt/prod/` | Plan on merge, **manual approval required** before apply (GitHub Environment protection rule) |
+
+Promotion flow: feature branch → PR into `develop` → PR into `qa` → PR into `main`.
+
+---
+
 ## Repository Structure
 
 ```
 enterprise-deployment-platform/
+├── bootstrap/                  # one-time: state backend + OIDC role (plain terraform, run manually)
+│   ├── main.tf
+│   └── github-oidc.tf
 ├── terraform-modules/
 │   ├── networking/
 │   ├── ecs-service/
@@ -137,9 +156,13 @@ enterprise-deployment-platform/
 │   ├── monitoring/
 │   └── notifications/
 ├── terragrunt/
+│   ├── root.hcl                # shared backend + provider config
 │   ├── dev/
+│   │   └── env.hcl
 │   ├── qa/
+│   │   └── env.hcl
 │   └── prod/
+│       └── env.hcl
 ├── app/
 │   └── src/
 ├── tests/
@@ -149,7 +172,9 @@ enterprise-deployment-platform/
 ├── docker/
 ├── .github/
 │   └── workflows/
+│       └── terragrunt-validate.yml
 ├── scripts/
+│   └── destroy-env.sh
 ├── docs/
 └── README.md
 ```
@@ -158,4 +183,6 @@ enterprise-deployment-platform/
 
 ## Status
 
-🟡 **Phase 0 in progress** — repo scaffolding underway (Dev, QA, Prod environment folders created).
+✅ **Phase 0 complete** — repo scaffolding, remote state backend, GitHub OIDC role, root Terragrunt config, and Dev/QA/Prod env files are in place.
+
+🟡 **Phase 1 next** — Networking module (VPC, subnets, routing, security groups).
