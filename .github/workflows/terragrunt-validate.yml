@@ -43,9 +43,9 @@ jobs:
 
       - name: Setup Terragrunt
         run: |
-          curl -sL -f https://github.com/gruntwork-io/terragrunt/releases/latest/download/terragrunt_linux_amd64 -o terragrunt
-          chmod +x terragrunt
-          sudo mv terragrunt /usr/local/bin/
+          curl -sL -f https://github.com/gruntwork-io/terragrunt/releases/latest/download/terragrunt_linux_amd64 -o /tmp/terragrunt-bin
+          chmod +x /tmp/terragrunt-bin
+          sudo mv /tmp/terragrunt-bin /usr/local/bin/terragrunt
           terragrunt --version
           
       - name: Terragrunt fmt check
