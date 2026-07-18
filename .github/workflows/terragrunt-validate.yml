@@ -43,10 +43,11 @@ jobs:
 
       - name: Setup Terragrunt
         run: |
-          curl -sL https://github.com/gruntwork-io/terragrunt/releases/download/v0.55.0/terragrunt_linux_amd64 -o terragrunt
+          curl -sL -f https://github.com/gruntwork-io/terragrunt/releases/latest/download/terragrunt_linux_amd64 -o terragrunt
           chmod +x terragrunt
           sudo mv terragrunt /usr/local/bin/
-
+          terragrunt --version
+          
       - name: Terragrunt fmt check
         run: terragrunt hclfmt --terragrunt-check
         working-directory: terragrunt/${{ needs.determine-env.outputs.env }}
