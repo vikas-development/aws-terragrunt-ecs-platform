@@ -50,11 +50,11 @@ A cloud-native DevOps automation platform that provisions and manages complete a
 - [x] CI validation workflow scaffold — `.github/workflows/terragrunt-validate.yml`
 
 ### Phase 1 — Networking Module
-- [ ] VPC with public/private subnets across 2 AZs
-- [ ] NAT Gateway (or NAT instance for cost control in Dev)
-- [ ] Route tables, Internet Gateway
-- [ ] Security groups (baseline deny-by-default)
-- [ ] Environment-specific CIDR isolation (Dev vs Prod)
+- [x] VPC with public/private subnets across 2 AZs
+- [x] NAT Gateway (single shared in Dev/QA for cost control, one-per-AZ in Prod for HA)
+- [x] Route tables, Internet Gateway
+- [x] Security groups (baseline deny-by-default: ALB → ECS tasks → Database only)
+- [x] Environment-specific CIDR isolation (Dev `10.0.0.0/16`, QA `10.1.0.0/16`, Prod `10.2.0.0/16`)
 
 ### Phase 2 — IAM & Security Foundations
 - [ ] Least-privilege IAM roles per service (ECS task role, execution role, CI/CD deploy role)
@@ -183,6 +183,8 @@ enterprise-deployment-platform/
 
 ## Status
 
-✅ **Phase 0 complete** — repo scaffolding, remote state backend, GitHub OIDC role, root Terragrunt config, and Dev/QA/Prod env files are in place.
+✅ **Phase 0 complete** — repo scaffolding, remote state backend, GitHub OIDC role, root Terragrunt config, Dev/QA/Prod env files, CI validation passing on all three branches, and branch protection on `main` are all in place.
 
-🟡 **Phase 1 next** — Networking module (VPC, subnets, routing, security groups).
+✅ **Phase 1 complete** — `terraform-modules/networking/` built and verified live in all 3 environments (Dev `10.0.0.0/16`, QA `10.1.0.0/16`, Prod `10.2.0.0/16`), confirmed via `aws ec2 describe-vpcs`. QA and Prod destroyed after verification to control cost; Dev kept running for continued development.
+
+🟡 **Phase 2 next** — IAM & Security Foundations (least-privilege roles, Secrets Manager, S3 bucket policies).
