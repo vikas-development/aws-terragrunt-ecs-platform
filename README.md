@@ -57,10 +57,11 @@ A cloud-native DevOps automation platform that provisions and manages complete a
 - [x] Environment-specific CIDR isolation (Dev `10.0.0.0/16`, QA `10.1.0.0/16`, Prod `10.2.0.0/16`)
 
 ### Phase 2 — IAM & Security Foundations
-- [ ] Least-privilege IAM roles per service (ECS task role, execution role, CI/CD deploy role)
-- [ ] IAM policies scoped per environment (no cross-env access)
-- [ ] Secrets management via AWS Secrets Manager / SSM Parameter Store
-- [ ] S3 bucket policies (block public access, encryption at rest)
+- [x] Least-privilege IAM roles per service (ECS task role, execution role) — deployed and verified in Dev, QA, Prod
+- [x] IAM policies scoped per environment (no cross-env access) — verified via `aws iam list-roles`
+- [ ] Secrets management via AWS Secrets Manager / SSM Parameter Store (module supports it; wired in once Phase 3/4 create real secrets)
+- [ ] S3 bucket policies (block public access, encryption at rest) — deferred to Phase 3 storage module
+- [ ] Tighten CI/CD deploy role from `PowerUserAccess` to scoped least-privilege policy (deferred to end-of-project hardening pass)
 
 ### Phase 3 — Storage & Database Modules
 - [ ] S3 module (app assets, Terraform state, logs)
@@ -187,4 +188,6 @@ enterprise-deployment-platform/
 
 ✅ **Phase 1 complete** — `terraform-modules/networking/` built and verified live in all 3 environments (Dev `10.0.0.0/16`, QA `10.1.0.0/16`, Prod `10.2.0.0/16`), confirmed via `aws ec2 describe-vpcs`. QA and Prod destroyed after verification to control cost; Dev kept running for continued development.
 
-🟡 **Phase 2 next** — IAM & Security Foundations (least-privilege roles, Secrets Manager, S3 bucket policies).
+✅ **Phase 2 in progress** — `terraform-modules/iam/` built (ECS execution role + task role, least-privilege) and deployed live to Dev, QA, and Prod (6 roles total, verified via `aws iam list-roles`). Secrets Manager wiring and S3 bucket policies deferred to Phase 3.
+
+🟡 **Phase 3 next** — Storage & Database Modules.
