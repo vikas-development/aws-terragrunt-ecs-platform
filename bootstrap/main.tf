@@ -39,6 +39,11 @@ variable "project_name" {
 resource "aws_s3_bucket" "terraform_state" {
   bucket = "${var.project_name}-tfstate"
 
+  # NOTE: prevent_destroy is OFF while you're still iterating on bootstrap
+  # setup (e.g. testing the OIDC role, org name, etc). Once your real
+  # environments (dev/qa/prod) have state stored in this bucket, flip this
+  # back to `true` so a stray `terraform destroy` in bootstrap/ can never
+  # wipe out live infra state.
   # lifecycle {
   #   prevent_destroy = true
   # }
