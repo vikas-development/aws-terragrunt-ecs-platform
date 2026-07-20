@@ -11,6 +11,10 @@ COPY app/src/ ./
 FROM node:20-alpine AS runtime
 WORKDIR /app
 
+# Force latest patched OS packages (e.g. openssl) even if the base image tag
+# hasn't been rebuilt upstream yet with the fix. Caught via ECR scan-on-push.
+RUN apk update && apk upgrade --no-cache
+
 # Run as a non-root user — never run containers as root in production
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=build /app ./
