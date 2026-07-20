@@ -59,15 +59,15 @@ A cloud-native DevOps automation platform that provisions and manages complete a
 ### Phase 2 — IAM & Security Foundations
 - [x] Least-privilege IAM roles per service (ECS task role, execution role) — deployed and verified in Dev, QA, Prod
 - [x] IAM policies scoped per environment (no cross-env access) — verified via `aws iam list-roles`
-- [ ] Secrets management via AWS Secrets Manager / SSM Parameter Store (module supports it; wired in once Phase 3/4 create real secrets)
-- [ ] S3 bucket policies (block public access, encryption at rest) — deferred to Phase 3 storage module
-- [ ] Tighten CI/CD deploy role from `PowerUserAccess` to scoped least-privilege policy (deferred to end-of-project hardening pass)
+- [x] Secrets management via AWS Secrets Manager / SSM Parameter Store — completed in Phase 3: RDS master credentials stored in Secrets Manager, IAM execution role wired via `dependency` block to read exactly that secret ARN, verified live in Dev
+- [x] S3 bucket policies (block public access, encryption at rest) — completed in Phase 3 storage module: public access block, AES256 encryption, TLS-only bucket policy
+- [ ] Tighten CI/CD deploy role from `PowerUserAccess` to scoped least-privilege policy (deliberately deferred until all modules exist — end-of-project hardening pass)
 
 ### Phase 3 — Storage & Database Modules
-- [ ] S3 module (app assets, Terraform state, logs)
-- [ ] RDS module (or DynamoDB, depending on app) with encryption, automated backups
-- [ ] Subnet groups placed in private subnets only
-- [ ] Environment-specific instance sizing (small in Dev, right-sized in Prod)
+- [x] S3 module (app assets, Terraform state, logs) — deployed and verified live in Dev, `plan`-verified for QA/Prod
+- [x] RDS module (PostgreSQL 16.14) with encryption, automated backups — deployed and verified live in Dev (destroyed after verification to control cost), `plan`-verified for QA/Prod
+- [x] Subnet groups placed in private subnets only — confirmed via networking module dependency
+- [x] Environment-specific instance sizing (small in Dev/QA, right-sized + Multi-AZ in Prod) — confirmed in plan output
 
 ### Phase 4 — Application Containerization
 - [ ] Write sample application (or use existing app) with health check endpoint
@@ -188,6 +188,8 @@ enterprise-deployment-platform/
 
 ✅ **Phase 1 complete** — `terraform-modules/networking/` built and verified live in all 3 environments (Dev `10.0.0.0/16`, QA `10.1.0.0/16`, Prod `10.2.0.0/16`), confirmed via `aws ec2 describe-vpcs`. QA and Prod destroyed after verification to control cost; Dev kept running for continued development.
 
-✅ **Phase 2 in progress** — `terraform-modules/iam/` built (ECS execution role + task role, least-privilege) and deployed live to Dev, QA, and Prod (6 roles total, verified via `aws iam list-roles`). Secrets Manager wiring and S3 bucket policies deferred to Phase 3.
+✅ **Phase 2 complete** — `terraform-modules/iam/` built (ECS execution role + task role, least-privilege) and deployed live to Dev, QA, and Prod (6 roles total, verified via `aws iam list-roles`). Secrets Manager wiring and S3 bucket policies completed via Phase 3.
 
-🟡 **Phase 3 next** — Storage & Database Modules.
+✅ **Phase 3 complete** — `terraform-modules/storage/` (S3) and `terraform-modules/database/` (RDS PostgreSQL 16.14) built. Both deployed and verified live in Dev; RDS destroyed after verification to control cost (S3/IAM cost nothing, left running). QA/Prod configs verified via `terragrunt plan` (correct naming, correct Prod hardening: Multi-AZ, deletion protection, 7-day backups). Database secret ARN wired into IAM execution role via Terragrunt `dependency` block — full networking → database → IAM chain proven working end-to-end.
+
+🟡 **Phase 4 next** — Application Containerization (Dockerfile, sample app, ECR push).
