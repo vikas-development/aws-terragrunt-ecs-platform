@@ -1,0 +1,13 @@
+{
+  "name": "enterprise-deployment-platform-app",
+  "version": "1.0.0",
+  "description": "Sample app for demonstrating ECS Fargate deployment",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Phase 10 will add real tests here\" && exit 0"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
