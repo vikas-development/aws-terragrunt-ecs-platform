@@ -70,10 +70,11 @@ A cloud-native DevOps automation platform that provisions and manages complete a
 - [x] Environment-specific instance sizing (small in Dev/QA, right-sized + Multi-AZ in Prod) — confirmed in plan output
 
 ### Phase 4 — Application Containerization
-- [ ] Write sample application (or use existing app) with health check endpoint
-- [ ] Dockerfile (multi-stage build, minimal base image)
-- [ ] Local docker build + run validation
-- [ ] Push to Amazon ECR
+- [x] Write sample application with health check endpoint — Node.js/Express, `/health` and `/` routes
+- [x] Dockerfile (multi-stage build, minimal base image) — non-root user, Alpine base, container healthcheck, explicit `apk upgrade` for latest security patches
+- [x] Local docker build + run validation — verified `/health` and `/` respond correctly
+- [x] Push to Amazon ECR — ECR module built (IMMUTABLE tags, scan-on-push, lifecycle policy), deployed to Dev
+- [x] Vulnerability scanning verified working end-to-end — initial scan found 1 CRITICAL (OpenSSL CVE-2026-34182, CVSS 9.1) + 14 other findings from stale Alpine base packages; added `apk upgrade` step to Dockerfile, rebuilt, rescanned — 0 findings confirmed
 
 ### Phase 5 — ECS Fargate Deployment Module
 - [ ] ECS cluster module
@@ -192,4 +193,6 @@ enterprise-deployment-platform/
 
 ✅ **Phase 3 complete** — `terraform-modules/storage/` (S3) and `terraform-modules/database/` (RDS PostgreSQL 16.14) built. Both deployed and verified live in Dev; RDS destroyed after verification to control cost (S3/IAM cost nothing, left running). QA/Prod configs verified via `terragrunt plan` (correct naming, correct Prod hardening: Multi-AZ, deletion protection, 7-day backups). Database secret ARN wired into IAM execution role via Terragrunt `dependency` block — full networking → database → IAM chain proven working end-to-end.
 
-🟡 **Phase 4 next** — Application Containerization (Dockerfile, sample app, ECR push).
+✅ **Phase 4 complete** — Sample Express app with `/health` endpoint, multi-stage Dockerfile (non-root, Alpine, healthcheck), and `terraform-modules/ecr/` (image scanning, immutable tags, lifecycle policy) built and deployed to Dev. Full pipeline proven end-to-end including real vulnerability remediation: initial ECR scan found 1 CRITICAL CVE (OpenSSL, CVSS 9.1) + 14 other findings from stale base image packages; patched with an explicit `apk upgrade` step, rebuilt, rescanned — 0 findings confirmed.
+
+🟡 **Phase 5 next** — ECS Fargate Deployment Module.
