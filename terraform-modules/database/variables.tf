@@ -8,10 +8,6 @@ variable "environment" {
   type        = string
 }
 
-variable "vpc_id" {
-  description = "VPC ID from the networking module"
-  type        = string
-}
 
 variable "private_subnet_ids" {
   description = "Private subnet IDs from the networking module (RDS lives here, never in a public subnet)"

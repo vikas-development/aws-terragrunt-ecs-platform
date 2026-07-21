@@ -17,7 +17,6 @@ dependency "networking" {
   # yet in this session, using placeholder values. Real values are used
   # automatically once networking is actually applied.
   mock_outputs = {
-    vpc_id                      = "vpc-mock"
     private_subnet_ids          = ["subnet-mock1", "subnet-mock2"]
     database_security_group_id  = "sg-mock"
   }
@@ -26,7 +25,6 @@ dependency "networking" {
 
 inputs = {
   environment                 = local.env_vars.locals.environment
-  vpc_id                      = dependency.networking.outputs.vpc_id
   private_subnet_ids          = dependency.networking.outputs.private_subnet_ids
   database_security_group_id  = dependency.networking.outputs.database_security_group_id
 
