@@ -14,3 +14,13 @@ output "service_name" {
 output "task_definition_arn" {
   value = aws_ecs_task_definition.app.arn
 }
+
+output "alb_arn_suffix" {
+  description = "Used by the monitoring module for CloudWatch metric dimensions"
+  value       = aws_lb.main.arn_suffix
+}
+
+output "target_group_arn_suffix" {
+  description = "Used by the monitoring module for CloudWatch metric dimensions"
+  value       = aws_lb_target_group.app.arn_suffix
+}
