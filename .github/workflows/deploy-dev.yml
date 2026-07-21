@@ -40,7 +40,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.6.0"
+          terraform_version: "1.9.8"
 
       - name: Terraform fmt check
         run: terraform fmt -check -recursive terraform-modules/
@@ -138,7 +138,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.6.0"
+          terraform_version: "1.9.8"
 
       - name: Setup Terragrunt
         run: |
@@ -178,7 +178,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.6.0"
+          terraform_version: "1.9.8"
 
       - name: Setup Terragrunt
         run: |
