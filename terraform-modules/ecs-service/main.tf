@@ -9,7 +9,8 @@ terraform {
 }
 
 locals {
-  name_prefix = "${var.project_name}-${var.environment}"
+  name_prefix  = "${var.project_name}-${var.environment}"
+  short_prefix = "edp-${var.environment}"
 }
 
 # ---------------------------------------------------------------------------
@@ -34,7 +35,7 @@ resource "aws_ecs_cluster" "main" {
 # ---------------------------------------------------------------------------
 
 resource "aws_lb" "main" {
-  name               = "${local.name_prefix}-alb"
+  name               = "${local.short_prefix}-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [var.alb_security_group_id]
@@ -46,7 +47,7 @@ resource "aws_lb" "main" {
 }
 
 resource "aws_lb_target_group" "app" {
-  name        = "${local.name_prefix}-tg"
+  name        = "${local.short_prefix}-tg"
   port        = var.container_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id

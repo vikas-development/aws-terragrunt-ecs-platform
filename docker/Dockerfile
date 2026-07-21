@@ -15,6 +15,14 @@ WORKDIR /app
 # hasn't been rebuilt upstream yet with the fix. Caught via ECR scan-on-push.
 RUN apk update && apk upgrade --no-cache
 
+RUN rm -rf /usr/local/lib/node_modules/npm \
+    /opt/yarn-v* \
+    /usr/local/bin/npm \
+    /usr/local/bin/npx \
+    /usr/local/bin/yarn \
+    /usr/local/bin/yarnpkg \
+    /usr/local/lib/node_modules/corepack \
+    /usr/local/bin/corepack
 # Run as a non-root user — never run containers as root in production
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=build /app ./
