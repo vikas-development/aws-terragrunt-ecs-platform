@@ -77,10 +77,12 @@ A cloud-native DevOps automation platform that provisions and manages complete a
 - [x] Vulnerability scanning verified working end-to-end — initial scan found 1 CRITICAL (OpenSSL CVE-2026-34182, CVSS 9.1) + 14 other findings from stale Alpine base packages; added `apk upgrade` step to Dockerfile, rebuilt, rescanned — 0 findings confirmed
 
 ### Phase 5 — ECS Fargate Deployment Module
-- [ ] ECS cluster module
-- [ ] Task definition (CPU/memory, environment variables from SSM)
-- [ ] ECS service with Application Load Balancer
-- [ ] Auto-scaling policy (target tracking on CPU/requests)
+- [x] ECS cluster module — Container Insights enabled
+- [x] Task definition (CPU/memory, environment variables from SSM) — references ECR image, both IAM roles, injects DB secret via `secrets` block, injects `ENVIRONMENT` env var
+- [x] ECS service with Application Load Balancer — deployed and verified live in Dev
+- [x] Auto-scaling policy (target tracking on CPU/requests) — 70% CPU target, min 1/max 2 in Dev
+
+**Verified live in Dev:** `curl http://<alb_dns_name>/health` → `{"status":"healthy",...}`, `curl http://<alb_dns_name>/` → `{"message":"...","environment":"dev"}`. Full chain confirmed: Internet → ALB → Target Group → ECS Fargate task (private subnet) → Container → App, with correct per-environment config flowing through.
 
 ### Phase 6 — CI/CD Pipeline (GitHub Actions)
 - [ ] Workflow: lint & validate Terraform/Terragrunt (`terraform fmt`, `validate`, `tflint`)
@@ -195,4 +197,6 @@ enterprise-deployment-platform/
 
 ✅ **Phase 4 complete** — Sample Express app with `/health` endpoint, multi-stage Dockerfile (non-root, Alpine, healthcheck), and `terraform-modules/ecr/` (image scanning, immutable tags, lifecycle policy) built and deployed to Dev. Full pipeline proven end-to-end including real vulnerability remediation: initial ECR scan found 1 CRITICAL CVE (OpenSSL, CVSS 9.1) + 14 other findings from stale base image packages; patched with an explicit `apk upgrade` step, rebuilt, rescanned — 0 findings confirmed.
 
-🟡 **Phase 5 next** — ECS Fargate Deployment Module.
+✅ **Phase 5 complete** — `terraform-modules/ecs-service/` built (cluster, ALB, target group, task definition, service, autoscaling) and deployed live to Dev. Full stack verified working end-to-end via curl: ALB → target group → Fargate task → container → app, with DB secret and environment config correctly injected. QA/Prod configs ready, not yet applied.
+
+🟡 **Phase 6 next** — CI/CD Pipeline (GitHub Actions): build, Trivy scan, deploy automation.
