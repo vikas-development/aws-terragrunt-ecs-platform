@@ -75,9 +75,9 @@ resource "aws_db_instance" "main" {
   engine_version = var.engine_version
   instance_class = var.instance_class
 
-  allocated_storage     = var.allocated_storage
-  storage_type          = "gp3"
-  storage_encrypted     = true
+  allocated_storage = var.allocated_storage
+  storage_type      = "gp3"
+  storage_encrypted = true
 
   db_name  = var.database_name
   username = var.master_username
@@ -87,10 +87,10 @@ resource "aws_db_instance" "main" {
   vpc_security_group_ids = [var.database_security_group_id]
   publicly_accessible    = false
 
-  multi_az                = var.multi_az
-  backup_retention_period = var.backup_retention_period
-  deletion_protection     = var.deletion_protection
-  skip_final_snapshot     = var.skip_final_snapshot
+  multi_az                  = var.multi_az
+  backup_retention_period   = var.backup_retention_period
+  deletion_protection       = var.deletion_protection
+  skip_final_snapshot       = var.skip_final_snapshot
   final_snapshot_identifier = var.skip_final_snapshot ? null : "${local.name_prefix}-db-final-snapshot"
 
   tags = {

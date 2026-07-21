@@ -63,7 +63,7 @@ data "aws_iam_policy_document" "app_assets" {
       type        = "*"
       identifiers = ["*"]
     }
-    actions   = ["s3:*"]
+    actions = ["s3:*"]
     resources = [
       aws_s3_bucket.app_assets.arn,
       "${aws_s3_bucket.app_assets.arn}/*",
