@@ -1,5 +1,5 @@
 # Enterprise Multi-Environment Deployment Platform
-
+# Testing
 A cloud-native DevOps automation platform that provisions and manages complete application environments (Dev, Prod) on AWS using Infrastructure as Code, with security scanning and centralized monitoring built in from day one.
 
 > **Scope note:** This build targets **Dev + QA + Prod** environments to keep every module fully working end-to-end rather than partially implemented across many environments. A Staging environment can be added later by reusing the same Terragrunt pattern.
@@ -57,28 +57,32 @@ A cloud-native DevOps automation platform that provisions and manages complete a
 - [x] Environment-specific CIDR isolation (Dev `10.0.0.0/16`, QA `10.1.0.0/16`, Prod `10.2.0.0/16`)
 
 ### Phase 2 — IAM & Security Foundations
-- [ ] Least-privilege IAM roles per service (ECS task role, execution role, CI/CD deploy role)
-- [ ] IAM policies scoped per environment (no cross-env access)
-- [ ] Secrets management via AWS Secrets Manager / SSM Parameter Store
-- [ ] S3 bucket policies (block public access, encryption at rest)
+- [x] Least-privilege IAM roles per service (ECS task role, execution role) — deployed and verified in Dev, QA, Prod
+- [x] IAM policies scoped per environment (no cross-env access) — verified via `aws iam list-roles`
+- [x] Secrets management via AWS Secrets Manager / SSM Parameter Store — completed in Phase 3: RDS master credentials stored in Secrets Manager, IAM execution role wired via `dependency` block to read exactly that secret ARN, verified live in Dev
+- [x] S3 bucket policies (block public access, encryption at rest) — completed in Phase 3 storage module: public access block, AES256 encryption, TLS-only bucket policy
+- [ ] Tighten CI/CD deploy role from `PowerUserAccess` to scoped least-privilege policy (deliberately deferred until all modules exist — end-of-project hardening pass)
 
 ### Phase 3 — Storage & Database Modules
-- [ ] S3 module (app assets, Terraform state, logs)
-- [ ] RDS module (or DynamoDB, depending on app) with encryption, automated backups
-- [ ] Subnet groups placed in private subnets only
-- [ ] Environment-specific instance sizing (small in Dev, right-sized in Prod)
+- [x] S3 module (app assets, Terraform state, logs) — deployed and verified live in Dev, `plan`-verified for QA/Prod
+- [x] RDS module (PostgreSQL 16.14) with encryption, automated backups — deployed and verified live in Dev (destroyed after verification to control cost), `plan`-verified for QA/Prod
+- [x] Subnet groups placed in private subnets only — confirmed via networking module dependency
+- [x] Environment-specific instance sizing (small in Dev/QA, right-sized + Multi-AZ in Prod) — confirmed in plan output
 
 ### Phase 4 — Application Containerization
-- [ ] Write sample application (or use existing app) with health check endpoint
-- [ ] Dockerfile (multi-stage build, minimal base image)
-- [ ] Local docker build + run validation
-- [ ] Push to Amazon ECR
+- [x] Write sample application with health check endpoint — Node.js/Express, `/health` and `/` routes
+- [x] Dockerfile (multi-stage build, minimal base image) — non-root user, Alpine base, container healthcheck, explicit `apk upgrade` for latest security patches
+- [x] Local docker build + run validation — verified `/health` and `/` respond correctly
+- [x] Push to Amazon ECR — ECR module built (IMMUTABLE tags, scan-on-push, lifecycle policy), deployed to Dev
+- [x] Vulnerability scanning verified working end-to-end — initial scan found 1 CRITICAL (OpenSSL CVE-2026-34182, CVSS 9.1) + 14 other findings from stale Alpine base packages; added `apk upgrade` step to Dockerfile, rebuilt, rescanned — 0 findings confirmed
 
 ### Phase 5 — ECS Fargate Deployment Module
-- [ ] ECS cluster module
-- [ ] Task definition (CPU/memory, environment variables from SSM)
-- [ ] ECS service with Application Load Balancer
-- [ ] Auto-scaling policy (target tracking on CPU/requests)
+- [x] ECS cluster module — Container Insights enabled
+- [x] Task definition (CPU/memory, environment variables from SSM) — references ECR image, both IAM roles, injects DB secret via `secrets` block, injects `ENVIRONMENT` env var
+- [x] ECS service with Application Load Balancer — deployed and verified live in Dev
+- [x] Auto-scaling policy (target tracking on CPU/requests) — 70% CPU target, min 1/max 2 in Dev
+
+**Verified live in Dev:** `curl http://<alb_dns_name>/health` → `{"status":"healthy",...}`, `curl http://<alb_dns_name>/` → `{"message":"...","environment":"dev"}`. Full chain confirmed: Internet → ALB → Target Group → ECS Fargate task (private subnet) → Container → App, with correct per-environment config flowing through.
 
 ### Phase 6 — CI/CD Pipeline (GitHub Actions)
 - [ ] Workflow: lint & validate Terraform/Terragrunt (`terraform fmt`, `validate`, `tflint`)
@@ -187,4 +191,12 @@ enterprise-deployment-platform/
 
 ✅ **Phase 1 complete** — `terraform-modules/networking/` built and verified live in all 3 environments (Dev `10.0.0.0/16`, QA `10.1.0.0/16`, Prod `10.2.0.0/16`), confirmed via `aws ec2 describe-vpcs`. QA and Prod destroyed after verification to control cost; Dev kept running for continued development.
 
-🟡 **Phase 2 next** — IAM & Security Foundations (least-privilege roles, Secrets Manager, S3 bucket policies).
+✅ **Phase 2 complete** — `terraform-modules/iam/` built (ECS execution role + task role, least-privilege) and deployed live to Dev, QA, and Prod (6 roles total, verified via `aws iam list-roles`). Secrets Manager wiring and S3 bucket policies completed via Phase 3.
+
+✅ **Phase 3 complete** — `terraform-modules/storage/` (S3) and `terraform-modules/database/` (RDS PostgreSQL 16.14) built. Both deployed and verified live in Dev; RDS destroyed after verification to control cost (S3/IAM cost nothing, left running). QA/Prod configs verified via `terragrunt plan` (correct naming, correct Prod hardening: Multi-AZ, deletion protection, 7-day backups). Database secret ARN wired into IAM execution role via Terragrunt `dependency` block — full networking → database → IAM chain proven working end-to-end.
+
+✅ **Phase 4 complete** — Sample Express app with `/health` endpoint, multi-stage Dockerfile (non-root, Alpine, healthcheck), and `terraform-modules/ecr/` (image scanning, immutable tags, lifecycle policy) built and deployed to Dev. Full pipeline proven end-to-end including real vulnerability remediation: initial ECR scan found 1 CRITICAL CVE (OpenSSL, CVSS 9.1) + 14 other findings from stale base image packages; patched with an explicit `apk upgrade` step, rebuilt, rescanned — 0 findings confirmed.
+
+✅ **Phase 5 complete** — `terraform-modules/ecs-service/` built (cluster, ALB, target group, task definition, service, autoscaling) and deployed live to Dev. Full stack verified working end-to-end via curl: ALB → target group → Fargate task → container → app, with DB secret and environment config correctly injected. QA/Prod configs ready, not yet applied.
+
+🟡 **Phase 6 next** — CI/CD Pipeline (GitHub Actions): build, Trivy scan, deploy automation.
