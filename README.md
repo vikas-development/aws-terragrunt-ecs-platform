@@ -85,12 +85,14 @@ A cloud-native DevOps automation platform that provisions and manages complete a
 **Verified live in Dev:** `curl http://<alb_dns_name>/health` → `{"status":"healthy",...}`, `curl http://<alb_dns_name>/` → `{"message":"...","environment":"dev"}`. Full chain confirmed: Internet → ALB → Target Group → ECS Fargate task (private subnet) → Container → App, with correct per-environment config flowing through.
 
 ### Phase 6 — CI/CD Pipeline (GitHub Actions)
-- [ ] Workflow: lint & validate Terraform/Terragrunt (`terraform fmt`, `validate`, `tflint`)
-- [ ] Workflow: build Docker image
-- [ ] Workflow: **Trivy vulnerability scan** (fail pipeline on HIGH/CRITICAL)
-- [ ] Workflow: push image to ECR
-- [ ] Workflow: `terragrunt plan` on PR, `terragrunt apply` on merge to `main`
-- [ ] Workflow: deploy new task definition revision to ECS
+- [x] Workflow: lint & validate Terraform/Terragrunt (`terraform fmt`, `tflint`, `terragrunt run --all -- validate`) — `deploy-dev.yml`, verified green
+- [x] Workflow: build Docker image — verified green
+- [x] Workflow: **Trivy vulnerability scan** (fail pipeline on HIGH/CRITICAL) — verified green
+- [x] Workflow: push image to ECR — verified green
+- [x] Workflow: `terragrunt plan` on push to `develop` — verified green (networking + ecs-service)
+- [x] Workflow: manual-dispatch `terragrunt apply` / `terragrunt destroy` for Dev (`workflow_dispatch`, gated behind `dev-manual-approval` environment) — built, not yet run end-to-end via Actions (deferred)
+- [ ] `deploy-qa.yml` (qa branch → QA environment) — not started
+- [ ] `deploy-prod.yml` (main branch → Prod environment, manual-approval-gated apply with real reviewer-protected GitHub Environment) — not started
 
 ### Phase 7 — Monitoring & Observability
 - [ ] CloudWatch dashboards (ECS service metrics, ALB metrics, RDS metrics)
@@ -199,4 +201,4 @@ enterprise-deployment-platform/
 
 ✅ **Phase 5 complete** — `terraform-modules/ecs-service/` built (cluster, ALB, target group, task definition, service, autoscaling) and deployed live to Dev. Full stack verified working end-to-end via curl: ALB → target group → Fargate task → container → app, with DB secret and environment config correctly injected. QA/Prod configs ready, not yet applied.
 
-🟡 **Phase 6 next** — CI/CD Pipeline (GitHub Actions): build, Trivy scan, deploy automation.
+✅ **Phase 6 (Dev) complete** — `.github/workflows/deploy-dev.yml` built and fully verified: `fmt-validate-lint` → `build-and-scan` → `terragrunt-plan` all green on push to `develop`. Manual-dispatch `apply`/`destroy` job is built and correctly gated (`workflow_dispatch`, `dev-manual-approval` environment) but has not yet been triggered end-to-end via Actions — deferred to a later session. QA and Prod workflows (`deploy-qa.yml`, `deploy-prod.yml`) not yet started; Dev's workflow will serve as the template once QA/Prod work begins.
