@@ -123,6 +123,7 @@ jobs:
   # or tear down Dev infrastructure.
   # ---------------------------------------------------------------------
   terragrunt-apply-or-destroy:
+    needs: terragrunt-plan
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.action != 'plan'
     environment: dev-manual-approval
