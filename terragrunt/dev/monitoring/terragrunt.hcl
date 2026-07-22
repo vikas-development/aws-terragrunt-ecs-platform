@@ -29,6 +29,14 @@ dependency "database" {
   mock_outputs_allowed_terraform_commands = ["validate", "plan"]
 }
 
+dependency "notifications" {
+  config_path = "../notifications"
+  mock_outputs = {
+    alarms_topic_arn = "arn:aws:sns:ap-south-1:000000000000:mock-topic"
+  }
+  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+}
+
 inputs = {
   environment              = local.env_vars.locals.environment
   ecs_cluster_name         = dependency.ecs_service.outputs.cluster_name
@@ -37,4 +45,5 @@ inputs = {
   target_group_arn_suffix  = dependency.ecs_service.outputs.target_group_arn_suffix
   db_instance_id           = dependency.database.outputs.db_instance_id
   cpu_alarm_threshold      = 80
+  sns_topic_arn            = dependency.notifications.outputs.alarms_topic_arn
 }
