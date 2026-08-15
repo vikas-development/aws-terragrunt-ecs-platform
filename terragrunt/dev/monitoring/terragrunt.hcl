@@ -18,7 +18,7 @@ dependency "ecs_service" {
     alb_arn_suffix            = "app/mock-alb/0000000000000000"
     target_group_arn_suffix   = "targetgroup/mock-tg/0000000000000000"
   }
-  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs_allowed_terraform_commands = ["validate", "plan","destroy"]
 }
 
 dependency "database" {

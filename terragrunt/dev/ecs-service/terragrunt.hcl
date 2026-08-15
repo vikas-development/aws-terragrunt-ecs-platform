@@ -59,7 +59,7 @@ inputs = {
   ecs_task_role_arn      = dependency.iam.outputs.ecs_task_role_arn
 
   ecr_repository_url   = dependency.ecr.outputs.repository_url
-  container_image_tag  = "v3"
+  container_image_tag  = "v5"
 
   db_secret_arn = dependency.database.outputs.secret_arn
 
