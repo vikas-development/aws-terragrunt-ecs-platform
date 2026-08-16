@@ -14,13 +14,13 @@ if /i not "%CONFIRM%"=="YES" (
 set ROOT=%~dp0..
 set ENV_DIR=%ROOT%\terragrunt\dev
 
-for %%M in (notifications monitoring ecs-service database networking) do (
+for %%M in (monitoring notifications ecs-service database networking) do (
     echo.
     echo --------------------------------------------
     echo   Destroying: %%M
     echo --------------------------------------------
     pushd "%ENV_DIR%\%%M"
-    call terragrunt destroy -auto-approve
+    call terragrunt destroy -auto-approve --terragrunt-non-interactive
     if errorlevel 1 (
         echo.
         echo [FAILED] Module %%M failed to destroy. Stopping here.

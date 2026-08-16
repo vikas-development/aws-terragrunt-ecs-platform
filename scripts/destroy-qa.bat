@@ -14,7 +14,7 @@ if /i not "%CONFIRM%"=="YES" (
 set ROOT=%~dp0..
 set ENV_DIR=%ROOT%\terragrunt\qa
 
-for %%M in (notifications monitoring ecs-service database networking) do (
+for %%M in (monitoring notifications ecs-service database networking) do (
     echo.
     echo --------------------------------------------
     echo   Destroying: %%M
