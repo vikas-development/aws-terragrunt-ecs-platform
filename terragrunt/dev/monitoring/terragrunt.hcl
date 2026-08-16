@@ -26,7 +26,7 @@ dependency "database" {
   mock_outputs = {
     db_instance_id = ""
   }
-  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs_allowed_terraform_commands = ["validate", "plan", "destroy"]
 }
 
 dependency "notifications" {
@@ -34,7 +34,7 @@ dependency "notifications" {
   mock_outputs = {
     alarms_topic_arn = "arn:aws:sns:ap-south-1:000000000000:mock-topic"
   }
-  mock_outputs_allowed_terraform_commands = ["validate", "plan"]
+  mock_outputs_allowed_terraform_commands = ["validate", "plan","destroy"]
 }
 
 inputs = {
