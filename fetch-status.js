@@ -31,7 +31,7 @@ const { CloudWatchClient, GetMetricDataCommand } = require("@aws-sdk/client-clou
 const { RDSClient, DescribeDBInstancesCommand } = require("@aws-sdk/client-rds");
 const { ECRClient, DescribeImagesCommand, DescribeImageScanFindingsCommand } = require("@aws-sdk/client-ecr");
 
-const REGION = "ap-south-1";
+const REGION = "us-east-1";
 const PROJECT = "enterprise-deployment-platform";
 const ACCOUNT_ID = "260969591589";
 
