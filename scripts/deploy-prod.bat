@@ -7,7 +7,7 @@ echo ============================================
 set ROOT=%~dp0..
 set ENV_DIR=%ROOT%\terragrunt\prod
 
-for %%M in (networking database iam ecr ecs-service monitoring notifications) do (
+for %%M in (networking database iam ecr ecs-service notifications monitoring) do (
     echo.
     echo --------------------------------------------
     echo   Applying: %%M
